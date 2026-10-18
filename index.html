@@ -3,8 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Portfolio</title>
-<meta name="description" content="Portfolio — about, projects as summits on a generated topographic map, and life outside the lab." />
+<title>Pierre Emery's Portfolio</title>
+<meta name="description" content="Pierre Emery, professional master's student at Mila, passionate about sports analytics and machine learning for climate change." />
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://pierre-emery.github.io/" />
+<meta property="og:title" content="Pierre Emery's Portfolio" />
+<meta property="og:description" content="Pierre Emery, professional master's student at Mila, passionate about sports analytics and machine learning for climate change." />
+<meta property="og:image" content="https://pierre-emery.github.io/assets/miniature.jpeg" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 <script>try{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }catch(e){}</script>
@@ -608,7 +615,7 @@ function openProject(i){
       ${p.goal?`<h3>Objective</h3>${paras(p.goal)}`:""}${at("goal")}
       ${p.work?`<h3>${esc(p.workTitle||"Approach and results")}</h3>${paras(p.work)}`:""}${at("work")}
       ${p.contribution?`<h3>My role</h3>${paras(p.contribution)}`:""}
-      ${links?`<div class="repo"><p>Want the details? The code and write-up are on GitHub.</p><div>${links}</div></div>`:""}
+      ${links?`<div class="repo"><p>The code and write-up are on GitHub.</p><div>${links}</div></div>`:""}
     </article>`);
   panel.querySelectorAll(".md figure img").forEach(img=>img.addEventListener("click",()=>{ $("#lbImg").src=img.src; $("#lbImg").alt=img.alt; $("#lbCap").textContent=img.alt; $("#lbPrev").hidden=$("#lbNext").hidden=true; $("#lb").showModal(); }));
 }
