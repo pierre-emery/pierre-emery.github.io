@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Itinerary — Portfolio</title>
+<meta name="description" content=" " />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+<script>try{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }catch(e){}</script>
+<style>
+  :root{
+    --paper:#f3efe6; --ink:#25211c; --muted:#7d7366;
+    --trail:#d1262b; --here:#2f7de1; --panel:#fbf8f2; --line:#d9d1c3; --sky:#e9e5dc;
+    color-scheme: light;
+    --font: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#16181b; --ink:#ebe6dc; --muted:#948a7c;
+      --trail:#ff5a5f; --here:#5aa2ff; --panel:#1d2024; --line:#33373c; --sky:#14171b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#16181b; --ink:#ebe6dc; --muted:#948a7c;
+    --trail:#ff5a5f; --here:#5aa2ff; --panel:#1d2024; --line:#33373c; --sky:#14171b;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow:hidden}
+  a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;text-decoration-thickness:1px}
+  a:hover{text-decoration-color:var(--ink)}
+  .kicker{font-family:var(--font);font-size:12.5px;color:var(--muted)}
+
+  .app{display:grid;grid-template-columns:minmax(340px,420px) 1fr;grid-template-rows:55px 1fr;height:100vh;height:100dvh}
+  .bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:0 22px;border-bottom:1px solid var(--line);background:var(--paper);z-index:3}
+  .side{grid-column:1;grid-row:2;overflow-y:auto;border-right:1px solid var(--line);padding:22px 22px 28px}
+  .stage{grid-column:2;grid-row:2;position:relative;overflow:hidden;background:var(--sky);touch-action:none}
+
+  .side h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-left:34px}
+  .side .sub{font-size:14px;line-height:1.55;color:var(--muted);margin:6px 0 8px 34px}
+
+  /* list: plain text, step numbers in the left gutter */
+  .wps{list-style:none}
+  .wp{position:relative;padding:18px 0 18px 34px;cursor:pointer}
+  .wp+.wp{border-top:1px solid var(--line)}
+  .num{position:absolute;left:0;top:20px;width:24px;text-align:right;font:500 14px var(--font);color:var(--muted)}
+  .wp.here .num,.wp.plan .num{font-size:12px;top:22px}
+  .wp.here .num{color:var(--here)}
+  .wp:hover h3,.wp.active h3,.wp.active .num{color:var(--trail)}
+  .wp.here.active h3{color:var(--here)}
+  .wp:focus-visible{outline:none} .wp:focus-visible h3{text-decoration:underline;text-underline-offset:3px}
+  .wp h3{font-size:17px;font-weight:600;line-height:1.3}
+  .wp .org{font-size:14px;margin-top:2px}
+  .wp .when{font-size:13px;color:var(--muted);margin-top:2px}
+  .wp p{font-size:14.5px;line-height:1.65;margin-top:8px}
+  .wp ul{margin:6px 0 0 18px;font-size:14px;line-height:1.6}
+  .wp .cw{font-size:13.5px;line-height:1.6;color:var(--muted);margin-top:8px}
+  .wp .cw b{font-weight:500;color:var(--ink)}
+  .wp .elinks{margin-top:8px;font-size:14px}
+
+  /* 3D stage */
+  #gl{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+  #gl:active{cursor:grabbing}
+  #pins{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .pin{position:absolute;left:0;top:0;pointer-events:auto;border:0;background:none;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--ink);font:inherit;will-change:transform}
+  .pin.off{display:none}
+  .pin .dot{width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--panel);border:2px solid var(--trail);
+    font:600 12px var(--font);display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .2s}
+  .pin.experience .dot{border-radius:5px}
+  .pin.plan .dot{border-style:dashed;color:var(--muted)}
+  .pin.here .dot{width:18px;height:18px;margin:-9px 0 0 -9px;background:var(--here);border:3px solid #fff;position:relative}
+  .pin.here .dot::after{content:"";position:absolute;inset:-9px;border-radius:50%;background:var(--here);opacity:.3;animation:pulse 2s ease-out infinite;z-index:-1}
+  @keyframes pulse{from{transform:scale(.6);opacity:.45}to{transform:scale(1.6);opacity:0}}
+  .pin .lab{margin-top:-12px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);padding:3px 7px;font-size:11.5px;font-weight:500;white-space:nowrap;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+  .pin.here .lab{border-color:var(--here)}
+  .pin.nolab .lab{display:none}
+  .pin.nolab:hover .lab,.pin.nolab.active .lab,.pin.nolab:focus-visible .lab{display:block}
+  .pin:hover,.pin.active,.pin:focus-visible{z-index:3}
+  .pin:hover .dot,.pin.active .dot,.pin:focus-visible .dot{transform:scale(1.15);background:var(--trail);color:#fff;border-color:#fff;border-style:solid}
+  .pin.here:hover .dot,.pin.here.active .dot{background:var(--here)}
+  .pin:focus-visible{outline:none}
+
+  .tour{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);font:inherit;font-family:var(--font);font-size:13px;letter-spacing:.02em;
+    color:#fff;background:var(--trail);border:1px solid var(--trail);border-radius:2px;padding:11px 18px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap}
+  .tour:hover{filter:brightness(1.08)} .tour:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .ridge{position:absolute;top:12px;right:12px;font:inherit;font-family:var(--font);font-size:13px;color:var(--ink);
+    background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:2px;padding:7px 11px;cursor:pointer}
+  .ridge:hover,.ridge:focus-visible{border-color:var(--ink);outline:none}
+  .tour.on{background:color-mix(in srgb,var(--panel) 92%,transparent);color:var(--ink);border-color:var(--line)}
+  .date{position:absolute;left:50%;top:18px;transform:translateX(-50%);font-family:var(--font);font-size:13px;font-weight:500;
+    background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:2px;padding:6px 12px;opacity:0;transition:opacity .4s;pointer-events:none}
+  .date.on{opacity:1}
+  .hint{position:absolute;top:16px;left:16px;font-family:var(--font);font-size:12.5px;color:var(--muted);transition:opacity .6s;text-shadow:0 0 4px var(--sky),0 0 8px var(--sky);pointer-events:none}
+  .hint.gone{opacity:0}
+
+  .nogl-msg{display:none;position:absolute;inset:0;place-items:center;text-align:center;padding:30px;color:var(--muted);font-size:14px}
+  .stage.nogl .nogl-msg{display:grid}
+  .stage.nogl #gl,.stage.nogl .tour,.stage.nogl .hint,.stage.nogl #pins,.stage.nogl .date,.stage.nogl .ridge{display:none}
+
+  @media (max-width:820px){
+    body{overflow:auto}
+    .app{display:block;height:auto}
+    .bar{position:sticky;top:0;height:55px;padding:0 16px}
+    .stage{height:64vh;height:64svh;border-bottom:1px solid var(--line)}
+    .side{overflow:visible;border:0;padding:18px 16px 24px}
+    .side h1{font-size:26px}
+    .hint{display:none}
+    .pin .lab{font-size:12.5px}
+  }
+  @media (prefers-reduced-motion: reduce){ *,*::after{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar" id="bar"></header>
+
+  <main class="stage" id="stage">
+    <canvas id="gl" aria-label="3D view of the trail along a ridge. Use the list to navigate checkpoints."></canvas>
+    <div id="pins"></div>
+    <div class="hint" id="hint">drag to explore · double-click to reset</div>
+    <div class="date" id="date" aria-live="polite"></div>
+    <button class="tour" id="tour">▶ Take me through the itinerary</button>
+    <button class="ridge" id="ridge">↻ New ridge</button>
+    <div class="nogl-msg">The 3D view needs WebGL, which isn't available in this browser. The itinerary is listed alongside.</div>
+  </main>
+
+  <section class="side" aria-label="Itinerary">
+    <h1>Itinerary</h1>
+    <p class="sub"> </p>
+    <ol class="wps" id="wps"></ol>
+  </section>
+</div>
+
+<script src="content.js"></script>
+<script src="common.js"></script>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Line2 } from "three/addons/lines/Line2.js";
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+
+const $ = s => document.querySelector(s);
+const { mulberry32, makeNoise, esc, fbm } = U;
+const stage = $("#stage"), canvas = $("#gl"), pinsEl = $("#pins");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const smooth = (a,b,x) => { const t = clamp((x-a)/(b-a), 0, 1); return t*t*(3-2*t); };
+const isMobile = () => innerWidth <= 820;
+
+/* ---------------- dates (months since year 0) ---------------- */
+const monthIdx = s => { const [y,m] = s.split("-").map(Number); return y*12 + (m||1) - 1; };
+const fmtM = m => `${U.MONTHS[((m%12)+12)%12]} ${Math.floor(m/12)}`;
+const today = new Date(), M_NOW = today.getFullYear()*12 + today.getMonth();
+
+// a new ridge on every visit (a #s=123 link reproduces one)
+let st = { seed: (location.hash.match(/s=(\d+)/) || [])[1] ? +location.hash.match(/s=(\d+)/)[1] : Math.floor(Math.random()*1e6) };
+
+/* ---------------- three.js setup ---------------- */
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); }
+catch (e) { stage.classList.add("nogl"); }
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 1, 8000);
+let controls = null;
+if (renderer){
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+  controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI*0.46; controls.minDistance = 50; controls.maxDistance = 2200;
+  controls.addEventListener("start", () => { pauseTour(); anim = null; $("#hint").classList.add("gone"); });
+}
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a7a60, 1.25); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2dc, 2.3); sun.position.set(-600, 700, 300); scene.add(sun);
+const walker = new THREE.Mesh(new THREE.SphereGeometry(4.2, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+const walkerRing = new THREE.Mesh(new THREE.SphereGeometry(6, 20, 14), new THREE.MeshBasicMaterial({ color: 0xd1262b, transparent: true, opacity: .35, depthWrite: false }));
+walker.add(walkerRing); walker.visible = false; scene.add(walker);
+
+let world = null, anim = null, tour = null, activeId = null;
+
+function palette(){
+  const C = s => new THREE.Color(s);
+  return U.isDark() ? {
+    sky: C("#14171b"), contour: C("#d9c4a2"), rock: C("#4d4842"), trail: C("#ff5a5f"), halo: C("#f4efe6"),
+    ramp: [[0,"#273024"],[.25,"#2e3a28"],[.45,"#3a3d30"],[.62,"#4a4540"],[.78,"#6b6862"],[.88,"#a4a19c"],[1,"#d6d4cf"]].map(([t,c])=>[t,C(c)]),
+    hemiSky: 0x9fb0c4, hemiGround: 0x2a2620, hemiI: .9, sunI: 1.6
+  } : {
+    sky: C("#e9e5dc"), contour: C("#5e4730"), rock: C("#8f8576"), trail: C("#d1262b"), halo: C("#ffffff"),
+    ramp: [[0,"#b7c39a"],[.22,"#9fae7c"],[.42,"#8f9270"],[.6,"#9c9284"],[.76,"#c2baae"],[.87,"#ece8e2"],[1,"#ffffff"]].map(([t,c])=>[t,C(c)]),
+    hemiSky: 0xffffff, hemiGround: 0x8a7a60, hemiI: 1.25, sunI: 2.3
+  };
+}
+function rampAt(ramp, t, out){
+  t = Math.max(0, Math.min(1, t));
+  for (let i=1;i<ramp.length;i++) if (t <= ramp[i][0]){ const [t0,a]=ramp[i-1], [t1,b]=ramp[i]; return out.copy(a).lerp(b,(t-t0)/(t1-t0)); }
+  return out.copy(ramp[ramp.length-1][1]);
+}
+
+/* ---------------- itinerary data ---------------- */
+const chronoEntries = () => SITE.itinerary.slice().sort((a,b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
+const label = e => e.short || e.org;
+
+/* ---------------- world ---------------- */
+function buildWorld(){
+  const P = palette();
+  if (world){ scene.remove(world.group); world.group.traverse(o => { o.geometry?.dispose(); o.material?.dispose(); }); }
+  const rand = mulberry32(st.seed), noise = makeNoise(rand);
+  const L = 1600, seg = isMobile() ? 240 : 380, H = 150;
+  const R01 = (a,b) => a + (b-a)*rand();
+  // every visit draws its own "style" of ridge: height, width, curvature, climb profile, surroundings
+  const A = R01(1.45, 2.2), WS = R01(.8, 1.35), CURV = R01(.04, .24), CURVF = R01(1.2, 3.6), PEXP = R01(.9, 2.1);
+
+  // 1. the arête: a spine from a low trailhead, up a narrow ridge to the summit, then down beyond it
+  const ang = rand()*Math.PI*2;                                                  // the whole range can face any direction
+  const head = new THREE.Vector2(Math.cos(ang), Math.sin(ang)).multiplyScalar(R01(300, 430));
+  const top  = new THREE.Vector2(Math.cos(ang+Math.PI+R01(-.5,.5)), Math.sin(ang+Math.PI+R01(-.5,.5))).multiplyScalar(R01(120, 300));
+  const dir = top.clone().sub(head), len = dir.length(); dir.normalize();
+  const nrm = new THREE.Vector2(-dir.y, dir.x);
+  const dir2 = dir.clone().rotateAround(new THREE.Vector2(), R01(-1.3, 1.3));     // the ridge bends past the summit
+  const ph = rand()*50;
+  const TS = [0, .14, .28, .42, .56, .7, .85, 1, 1.15, 1.3, 1.45];               // control point 7 is the summit
+  const ctrl = TS.map(t => {
+    const p = t <= 1
+      ? head.clone().addScaledVector(dir, len*t).addScaledVector(nrm, Math.sin(Math.PI*t)*len*CURV*clamp(noise(t*CURVF+ph, 3.3)/.45, -1, 1))
+      : top.clone().addScaledVector(dir2, len*(t-1));
+    return new THREE.Vector3(p.x, 0, p.y);
+  });
+  const spine = new THREE.CatmullRomCurve3(ctrl, false, "centripetal");
+  const sS = 7/(TS.length-1);                                                    // spine parameter of the summit
+
+  // nearest point on the spine (polyline) → distance, position along it, which flank
+  const NS = 260, sp = new Float64Array((NS+1)*3);
+  for (let i=0;i<=NS;i++){ const p = spine.getPoint(i/NS); sp[i*3]=p.x; sp[i*3+1]=p.z; sp[i*3+2]=i/NS; }
+  const near = (x,z) => {
+    let best = Infinity, bs = 0, sg = 1;
+    for (let i=0;i<NS;i++){
+      const ax=sp[i*3], az=sp[i*3+1], ex=sp[i*3+3]-ax, ez=sp[i*3+4]-az, l2=ex*ex+ez*ez || 1e-9;
+      let t=((x-ax)*ex+(z-az)*ez)/l2; t = t<0 ? 0 : t>1 ? 1 : t;
+      const dx=ax+ex*t-x, dz=az+ez*t-z, d2=dx*dx+dz*dz;
+      if (d2 < best){ best=d2; bs=sp[i*3+2]+(sp[i*3+5]-sp[i*3+2])*t; sg=(ex*(z-az)-ez*(x-ax)) > 0 ? 1 : -1; }
+    }
+    return [Math.sqrt(best), bs, sg];
+  };
+
+  // crest profile along the spine, with small gendarmes (none right at the summit)
+  const asym = R01(.6, .95);                                                  // one flank steeper than the other
+  const gend = s => .07*Math.max(0, noise(s*16+ph, 9.1)) * Math.min(1, Math.abs(s-sS)/.08);
+  const R = s => (s <= sS ? .14 + .86*Math.pow(s/sS, PEXP) : 1 - .62*Math.pow((s-sS)/(1-sS), 1.1)) + gend(s);
+  // cross-section: a sharp cusp (exp) on top of a broader shoulder (Gaussian), cut by couloirs on the flanks
+  const ridge = (x,z) => {
+    const [d, s, sg] = near(x,z);
+    const r = Math.min(1, s/sS);
+    const w = WS * (46 + 34*(1-r)) * (1 + .22*noise(s*7+ph, 4.4)) * (sg > 0 ? asym : 1/asym);
+    const c = .55*Math.exp(-d/w) + .45*Math.exp(-((d/(w*2.8))**2));
+    const gully = Math.pow(1 - Math.abs(noise(s*30+11.3, d/50+2.1)), 3) * smooth(w*.5, w*2.2, d);
+    return R(s) * c * (1 - .25*gully);
+  };
+
+  // 2. height: warped fBm valleys + a few lesser peaks + the ridge
+  // surrounding mountains: some round, some stretched into small ranges; kept off the trail itself
+  const peaks = [], np = Math.floor(R01(10, 17));
+  for (let k=0, t=0; peaks.length<np && t<400; t++){
+    const x = (rand()-.5)*L*.95, z = (rand()-.5)*L*.95, sx = R01(60, 150), el = R01(1, 3.2), th = rand()*Math.PI;
+    if (near(x,z)[0] < sx*1.6 + 60) continue;
+    const c = Math.cos(th), sn = Math.sin(th);
+    peaks.push({ x, z, h: R01(.3, 1.15), a: 1/(2*sx*sx), b: 1/(2*(sx*el)**2), c, s: sn, r2: (4*sx*el)**2 });
+  }
+  const bAmp = R01(.28, .5), bRid = R01(.15, .38), bF = R01(1.2, 2.3);
+  const base = (x,z) => {
+    const u = x/600, v = z/600;
+    const wx = u + .12*fbm(noise,u*1.5+5.2,v*1.5+1.3,3), wz = v + .12*fbm(noise,u*1.5+9.7,v*1.5+4.1,3);
+    let y = bAmp*fbm(noise, wx*bF+31.7, wz*bF+12.9, 5);
+    const r = 1 - Math.abs(noise(wx*2.4+57.1, wz*2.4+3.7)); y += bRid*r*r*r;
+    for (const p of peaks){
+      const dx = x-p.x, dz = z-p.z, d2 = dx*dx+dz*dz; if (d2 > p.r2) continue;
+      const lu = dx*p.c + dz*p.s, lv = -dx*p.s + dz*p.c;
+      y += p.h*Math.exp(-lu*lu*p.b - lv*lv*p.a);
+    }
+    y -= .35*Math.exp(-((x-head.x)**2+(z-head.y)**2)/(2*200*200));
+    y -= .25*Math.max(0, (x*head.x + z*head.y)/(head.length()*800));               // the land falls away below the trailhead
+    return y;
+  };
+  const sunA = rand()*Math.PI*2; sun.position.set(Math.cos(sunA)*650, 700, Math.sin(sunA)*650);
+  const hf = (x,z) => (base(x,z) + A*ridge(x,z))*H;
+
+  // 3. terrain mesh: elevation + slope colours, contour lines in the shader
+  const geo = new THREE.PlaneGeometry(L, L, seg, seg); geo.rotateX(-Math.PI/2);
+  const pos = geo.attributes.position, n1 = seg+1, hgrid = new Float32Array(n1*n1);
+  let yMin=Infinity, yMax=-Infinity;
+  for (let i=0;i<pos.count;i++){ const y = hf(pos.getX(i), pos.getZ(i)); pos.setY(i,y); hgrid[i]=y; if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
+  geo.computeVertexNormals();
+  const nrmA = geo.attributes.normal, col = new Float32Array(pos.count*3), c = new THREE.Color();
+  for (let i=0;i<pos.count;i++){
+    rampAt(P.ramp, (pos.getY(i)-yMin)/(yMax-yMin), c);
+    c.lerp(P.rock, Math.max(0, Math.min(.65, (1-nrmA.getY(i)-.1)*3.2)));
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+  }
+  geo.setAttribute("color", new THREE.BufferAttribute(col,3));
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+  mat.onBeforeCompile = sh => {
+    sh.uniforms.uInt = { value: (yMax-yMin)/34 }; sh.uniforms.uMin = { value: yMin }; sh.uniforms.uLine = { value: P.contour };
+    sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying float vY;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvY = position.y;");
+    sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nvarying float vY;\nuniform float uInt; uniform float uMin; uniform vec3 uLine;")
+      .replace("#include <color_fragment>", `#include <color_fragment>
+        float hh = (vY - uMin) / uInt; float fw = max(fwidth(hh), 1e-4);
+        float minor = 1.0 - smoothstep(0.0, fw*1.1, abs(fract(hh+0.5)-0.5));
+        float hh5 = hh/5.0; float fw5 = max(fwidth(hh5),1e-4);
+        float major = 1.0 - smoothstep(0.0, fw5*1.6, abs(fract(hh5+0.5)-0.5));
+        diffuseColor.rgb = mix(diffuseColor.rgb, uLine, clamp(minor*0.22 + major*0.38, 0.0, 0.5));`);
+  };
+  const terrain = new THREE.Mesh(geo, mat);
+  const cellS = L/seg;
+  const gridY = (x,z) => {
+    const fx = (x+L/2)/cellS, fz = (z+L/2)/cellS;
+    const ix = Math.max(0,Math.min(seg-1,Math.floor(fx))), iz = Math.max(0,Math.min(seg-1,Math.floor(fz)));
+    const tx = fx-ix, tz = fz-iz, i0 = iz*n1+ix;
+    return hgrid[i0]*(1-tx)*(1-tz) + hgrid[i0+1]*tx*(1-tz) + hgrid[i0+n1]*(1-tx)*tz + hgrid[i0+n1+1]*tx*tz;
+  };
+
+  // 4. trail: straight along the crest, from the trailhead to the summit
+  const LIFT = 4;
+  const tp = [];
+  for (let i=0;i<=900;i++){ const p = spine.getPoint(sS*i/900); p.y = gridY(p.x,p.z) + LIFT; tp.push(p); }
+  const curve = new THREE.CatmullRomCurve3(tp, false, "catmullrom", .2);
+  curve.arcLengthDivisions = 2000;
+
+  // 5. TIME → POSITION: the trail spans [first start, max(today, last end, last plan)], linearly.
+  //    One checkpoint per entry (its start), plus "today" and planned steps.
+  const list = chronoEntries();
+  const ups = (SITE.upcoming||[]).map((x,i) => ({ ...x, i, m: monthIdx(x.date) })).filter(x => x.m > M_NOW);
+  const mStart = Math.min(...SITE.itinerary.map(e => monthIdx(e.start)));
+  const mEnd = Math.max(M_NOW, ...SITE.itinerary.filter(e=>e.end).map(e => monthIdx(e.end)), ...ups.map(x => x.m));
+  const uOf = m => Math.max(0, Math.min(1, (m - mStart)/Math.max(1, mEnd - mStart)));
+  const uNow = uOf(M_NOW);
+
+  const events = [];
+  list.forEach((e,i) => events.push({ id:`e${i+1}`, k: i+1, e, kind:"entry", m: monthIdx(e.start), prio: 1 }));
+  ups.forEach(x => events.push({ id:`p${x.i}`, kind:"plan", x, m: x.m, prio: 2 }));
+  events.push({ id:"here", kind:"here", m: M_NOW, prio: 0 });
+  events.forEach(ev => { ev.u = uOf(ev.m); ev.p = curve.getPointAt(ev.u); });
+
+  // 6. trail lines: walked part solid, the stretch after today dashed
+  const lines = [];
+  const sample = (a,b) => { const n = Math.max(2, Math.round(1600*(b-a))), arr = []; for (let i=0;i<=n;i++){ const p = curve.getPointAt(a+(b-a)*i/n); arr.push(p.x,p.y,p.z); } return arr; };
+  const mkLine = (positions, color, px, order, opts = {}) => {
+    const g = new LineGeometry(); g.setPositions(positions);
+    const m = new LineMaterial({ color, linewidth: px, worldUnits: false, depthWrite: opts.depthWrite ?? true, dashed: !!opts.dashed, dashSize: 7, gapSize: 6 });
+    m.resolution.set(stage.clientWidth, stage.clientHeight);
+    const l = new Line2(g, m); l.computeLineDistances(); l.renderOrder = order; lines.push(l); return l;
+  };
+  const past = sample(0, uNow);
+  mkLine(past, P.halo, 7, 1, { depthWrite: false }); mkLine(past, P.trail, 4, 2);
+  if (uNow < .999){ const fut = sample(uNow, 1); mkLine(fut, P.halo, 6, 1, { depthWrite: false }); mkLine(fut, P.trail, 3.5, 2, { dashed: true }); }
+
+  scene.background = P.sky; scene.fog = new THREE.Fog(P.sky, 900, 2700);
+  hemi.color.set(P.hemiSky); hemi.groundColor.set(P.hemiGround); hemi.intensity = P.hemiI; sun.intensity = P.sunI;
+  walkerRing.material.color.copy(P.trail);
+
+  const group = new THREE.Group(); group.add(terrain, ...lines); scene.add(group);
+  const back = new THREE.Vector3(head.x, 0, head.y).normalize(), lat = new THREE.Vector3(-back.z, 0, back.x);
+  const viewDir = back.multiplyScalar(1).addScaledVector(lat, R01(-.55, .55)).setY(.78).normalize();
+  world = { group, lines, curve, hf, list, ups, events, mStart, mEnd, uNow, viewDir, box: new THREE.Box3().setFromPoints(tp) };
+}
+
+/* ---------------- sidebar (newest first) ---------------- */
+function entryHTML(e, k){
+  const bullets = (e.bullets||[]).length ? `<ul>${e.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>` : "";
+  const courses = (e.courses||[]).length ? `<div class="cw"><b>Coursework:</b> ${e.courses.map(c=>esc(c.name)).join(" · ")}</div>` : "";
+  const links = (e.links||[]).length ? `<div class="elinks">${e.links.map(l=>`<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`).join(" · ")}</div>` : "";
+  return `<li class="wp ${e.type}" data-id="e${k}" tabindex="0">
+    <span class="num">${k}</span>
+    <h3>${esc(e.title)}</h3>
+    <div class="org">${esc(e.org)}${e.place ? `, ${esc(e.place)}` : ""}</div>
+    <div class="when">${U.range(e)}</div>
+    ${e.summary ? `<p>${esc(e.summary)}</p>` : ""}${bullets}${courses}${links}</li>`;
+}
+function hereHTML(){
+  return `<li class="wp here" data-id="here" tabindex="0"><span class="num">now</span>
+    <h3>Today</h3><div class="when">${fmtM(M_NOW)}</div>${SITE.now ? `<p>${esc(SITE.now)}</p>` : ""}</li>`;
+}
+function planHTML(x){
+  const email = (SITE.links.find(l=>/^mailto:/.test(l.href))||{}).href;
+  return `<li class="wp plan" data-id="p${x.i}" tabindex="0"><span class="num">next</span>
+    <h3>${esc(x.label)}</h3><div class="when">From ${fmtM(x.m)}</div>${x.text ? `<p>${esc(x.text)}</p>` : ""}
+    ${x.contact && email ? `<div class="elinks"><a href="${esc(email)}">Let's get in touch →</a></div>` : ""}</li>`;
+}
+
+function renderSidebar(){
+  const items = world.list.map((e,i) => ({ m: monthIdx(e.start), html: entryHTML(e, i+1) }));
+  items.push({ m: M_NOW + .5, html: hereHTML() });
+  world.ups.forEach(x => items.push({ m: x.m, html: planHTML(x) }));
+  items.sort((a,b) => b.m - a.m);
+  $("#wps").innerHTML = items.map(x => x.html).join("");
+}
+
+/* ---------------- pins ---------------- */
+let pins = [];
+function buildPins(){
+  pinsEl.innerHTML = ""; pins = [];
+  for (const ev of world.events){
+    let cls = "", dot = "", name = "";
+    if (ev.kind === "entry"){ cls = ev.e.type; dot = ev.k; name = label(ev.e); }
+    if (ev.kind === "plan"){ cls = "plan"; dot = "→"; name = ev.x.short || ev.x.label; }
+    if (ev.kind === "here"){ cls = "here"; name = "You are here"; }
+    const b = document.createElement("button");
+    b.className = `pin ${cls}`; b.dataset.id = ev.id;
+    b.innerHTML = `<span class="dot">${dot}</span><span class="lab">${esc(name)}</span>`;
+    b.setAttribute("aria-label", `${name}, ${fmtM(ev.m)}`);
+    b.addEventListener("click", () => flyToId(ev.id));
+    pinsEl.appendChild(b);
+    pins.push({ el: b, ev, p: ev.p.clone().add(new THREE.Vector3(0, 3, 0)), lw: b.querySelector(".lab").offsetWidth });
+  }
+  pins.sort((a,b) => a.ev.prio - b.ev.prio || a.ev.m - b.ev.m);    // label priority when they collide
+}
+const _v = new THREE.Vector3();
+function updatePins(){
+  const w = stage.clientWidth, h = stage.clientHeight, taken = [];
+  for (const pn of pins){
+    _v.copy(pn.p).project(camera);
+    if (_v.z > 1 || Math.abs(_v.x) > 1.2 || Math.abs(_v.y) > 1.2){ pn.el.classList.add("off"); continue; }
+    const x = (_v.x+1)/2*w, y = (1-_v.y)/2*h;
+    pn.el.classList.remove("off");
+    pn.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
+    const r = { l: x+6, r: x+16+pn.lw, t: y-15, b: y+11 };
+    const clash = taken.some(q => !(r.r < q.l || r.l > q.r || r.b < q.t || r.t > q.b));
+    pn.el.classList.toggle("nolab", clash);
+    if (!clash) taken.push(r);
+  }
+}
+
+/* ---------------- camera ---------------- */
+function setActive(id){
+  activeId = id;
+  document.querySelectorAll(".wp").forEach(li => li.classList.toggle("active", li.dataset.id === id));
+  pins.forEach(pn => pn.el.classList.toggle("active", pn.ev.id === id));
+}
+function scrollToItem(id){
+  if (isMobile()) return;
+  document.querySelector(`.wp[data-id="${id}"]`)?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+}
+function tweenTo(pos, target, dur = 1500){
+  if (!controls) return;
+  anim = { t0: performance.now(), dur: reduced ? 1 : dur, p0: camera.position.clone(), p1: pos, q0: controls.target.clone(), q1: target };
+}
+function viewFor(u){
+  const p = world.curve.getPointAt(u), T = world.curve.getTangentAt(u); T.y = 0; T.normalize();
+  const sideV = new THREE.Vector3(T.z, 0, -T.x);
+  const cam = p.clone().addScaledVector(T, -480).addScaledVector(sideV, 220); cam.y = p.y + 300;
+  cam.y = Math.max(cam.y, world.hf(cam.x, cam.z) + 90);
+  return { cam, p };
+}
+function flyToId(id){
+  const ev = world.events.find(e => e.id === id); if (!ev) return;
+  pauseTour(); const { cam, p } = viewFor(ev.u); tweenTo(cam, p); setActive(id); scrollToItem(id);   // a paused tour can still be resumed
+}
+function overview(dur = 1500){
+  setActive(null);
+  const s = world.box.getSize(new THREE.Vector3());
+  const c = world.box.getCenter(new THREE.Vector3()).lerp(world.curve.getPointAt(0), .22);   // aim a little toward the trailhead so it clears the button
+  const dir = world.viewDir;
+  tweenTo(c.clone().addScaledVector(dir, Math.max(s.x, s.z)*1.6 + 420), c, dur);
+}
+
+/* ---------------- guided tour: always oldest → newest, slowing down at each checkpoint; can pause and resume ---------------- */
+function tourButton(){
+  const b = $("#tour");
+  b.textContent = !tour ? "▶ Take me through the itinerary" : tour.playing ? "❚❚ Pause" : "▶ Resume";
+  b.classList.toggle("on", !!tour && tour.playing);
+}
+function playTour(){
+  if (!world || !controls) return;
+  anim = null; $("#hint").classList.add("gone");
+  if (!tour) tour = { s: 0, dur: reduced ? .01 : 22 };
+  tour.playing = true;
+  walker.visible = true; $("#date").classList.add("on");
+  tourButton();
+}
+function pauseTour(){ if (tour && tour.playing){ tour.playing = false; tourButton(); } }
+function stopTour(finished){
+  if (!tour) return;
+  tour = null; walker.visible = false; $("#date").classList.remove("on");
+  tourButton();
+  if (finished) setTimeout(() => { if (!tour) overview(2200); }, 1400);
+}
+const _a = new THREE.Vector3(), _b = new THREE.Vector3();
+function stepTour(dt){
+  if (!tour.playing) return;
+  let dmin = 1; for (const ev of world.events) dmin = Math.min(dmin, Math.abs(ev.u - tour.s));
+  const slow = .4 + .6*smooth(0, .03, dmin);                 // linger near checkpoints
+  tour.s = Math.min(1, tour.s + slow*dt/tour.dur);
+  const p = world.curve.getPointAt(tour.s), ahead = world.curve.getPointAt(Math.min(1, tour.s + .05));
+  _a.subVectors(ahead, p); _a.y = 0; if (_a.lengthSq() < 1e-6) _a.set(0,0,-1); _a.normalize();
+  _b.copy(p).addScaledVector(_a, -300); _b.y = Math.max(p.y + 190, world.hf(_b.x, _b.z) + 90);
+  camera.position.lerp(_b, .06); controls.target.lerp(ahead, .08);
+  walker.position.copy(p);
+  $("#date").textContent = fmtM(Math.round(world.mStart + tour.s*(world.mEnd - world.mStart)));
+  let near = null, best = .02;
+  for (const ev of world.events){ const d = Math.abs(ev.u - tour.s); if (d < best){ best = d; near = ev.id; } }
+  if (near !== null && near !== activeId){ setActive(near); scrollToItem(near); }
+  if (tour.s >= 1) stopTour(true);
+}
+
+/* ---------------- render loop ---------------- */
+function resize(){
+  if (!renderer) return;
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  world?.lines.forEach(l => l.material.resolution.set(w, h));
+}
+let last = performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = Math.min(.05, (now-last)/1000); last = now;
+  if (!renderer || !world) return;
+  if (tour) stepTour(dt);
+  else if (anim){
+    const k = Math.min(1, (now-anim.t0)/anim.dur), e = ease(k);
+    camera.position.lerpVectors(anim.p0, anim.p1, e); controls.target.lerpVectors(anim.q0, anim.q1, e);
+    if (k === 1) anim = null;
+  }
+  controls.update();
+  if (walker.visible) walker.scale.setScalar(Math.max(.35, camera.position.distanceTo(walker.position)/700));
+  renderer.render(scene, camera);
+  updatePins();
+}
+
+/* ---------------- wiring ---------------- */
+$("#wps").addEventListener("click", ev => {
+  if (ev.target.closest("a, summary, details ul")) return;
+  const li = ev.target.closest(".wp"); if (li) flyToId(li.dataset.id);
+});
+$("#wps").addEventListener("keydown", ev => {
+  if (ev.key !== "Enter" && ev.key !== " ") return;
+  const li = ev.target.closest(".wp"); if (li && ev.target === li){ ev.preventDefault(); flyToId(li.dataset.id); }
+});
+$("#tour").addEventListener("click", () => tour && tour.playing ? pauseTour() : playTour());
+$("#ridge").addEventListener("click", () => {
+  stopTour(); st.seed = Math.floor(Math.random()*1e6); history.replaceState(null, "", `#s=${st.seed}`);
+  buildWorld(); buildPins(); setActive(null); overview(900);
+});
+canvas.addEventListener("dblclick", () => { stopTour(); overview(); });
+addEventListener("keydown", ev => { if (ev.key === "Escape"){ stopTour(); if (world) overview(); } });
+U.onTheme(() => { buildWorld(); buildPins(); setActive(activeId); });
+new ResizeObserver(resize).observe(stage);
+
+U.bar($("#bar"), "itinerary");
+document.title = `Itinerary — ${SITE.name}`;
+
+buildWorld(); renderSidebar(); buildPins();
+resize(); overview(1);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

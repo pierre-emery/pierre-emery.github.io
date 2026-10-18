@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Outside — Portfolio</title>
+<meta name="description" content="Interests outside work and school: mountain sports, photography and more." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --ink:#25211c; --muted:#7d7366;
+    --contour:#a0703f; --contour-index:#7c5228;
+    --trail:#d1262b; --panel:#fbf8f2; --line:#d9d1c3;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#16181b; --ink:#ebe6dc; --muted:#948a7c;
+      --contour:#6f5842; --contour-index:#a7835c;
+      --trail:#ff5a5f; --panel:#1d2024; --line:#33373c;
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;text-decoration-thickness:1px}
+  a:hover{text-decoration-color:var(--ink)}
+  .kicker{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+
+  /* top bar */
+  .top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:18px 0 14px}
+  .top .name{font-weight:600;font-size:16px;text-decoration:none}
+  .pages{display:flex;gap:16px;font-family:"IBM Plex Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.09em}
+  .pages a{color:var(--muted);text-decoration:none;padding-bottom:2px}
+  .pages a:hover{color:var(--ink)}
+  .pages a[aria-current]{color:var(--ink);border-bottom:1.5px solid var(--trail)}
+
+  /* hero with a generated contour band */
+  .hero{position:relative;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);min-height:250px}
+  #topo{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(90deg,var(--paper) 0%,color-mix(in srgb,var(--paper) 82%,transparent) 42%,transparent 78%)}
+  .hero .wrap{position:relative;z-index:1;padding-top:46px;padding-bottom:42px}
+  .hero h1{font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin-top:8px}
+  .hero .intro{font-size:16px;line-height:1.6;margin-top:12px;max-width:540px}
+
+  /* sections */
+  .sec{padding-top:44px}
+  .sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .sec-h h2{font-size:20px;font-weight:600;letter-spacing:-.01em}
+
+  /* interests */
+  .ints{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:16px}
+  .int{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:16px 18px 18px}
+  .int img{display:block;width:calc(100% + 36px);margin:-16px -18px 14px;aspect-ratio:3/2;object-fit:cover;border-bottom:1px solid var(--line)}
+  .int h3{font-size:16.5px;font-weight:600;margin-top:5px}
+  .int p{font-size:14px;line-height:1.55;margin-top:6px}
+  .int.past h3{color:var(--muted)}
+  .also{margin-top:14px;font-size:14px;line-height:1.6}
+  .also .kicker{margin-right:8px}
+
+  /* photos */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:var(--panel)}
+  .seg button{font:inherit;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:6px 9px;border:0;background:none;color:var(--muted);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button:hover{color:var(--ink)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  .seg button:focus-visible{outline:1px solid var(--ink)}
+  .grid{columns:3 260px;column-gap:14px;margin-top:16px}
+  .grid figure{break-inside:avoid;margin:0 0 18px}
+  .ph{all:unset;display:block;width:100%;cursor:zoom-in;border-radius:2px;overflow:hidden;background:var(--line)}
+  .ph img{display:block;width:100%;height:auto;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+  .ph:hover img{transform:scale(1.025)}
+  .ph:focus-visible{outline:2px solid var(--trail);outline-offset:2px}
+  .ph.missing{cursor:default;aspect-ratio:4/3;display:grid;place-items:center;padding:12px;text-align:center;
+    background:repeating-linear-gradient(-45deg,transparent 0 7px,color-mix(in srgb,var(--line) 70%,transparent) 7px 8px);border:1px dashed var(--line);
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted)}
+  figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:7px}
+  figcaption b{font-size:13px;font-weight:500}
+  figcaption i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);white-space:nowrap}
+
+  /* lightbox */
+  #lb{border:0;padding:0;background:none;max-width:100vw;max-height:100vh;width:100vw;height:100vh;color:#f3efe6}
+  #lb::backdrop{background:rgba(12,12,12,.88)}
+  #lb[open]{display:grid;place-items:center}
+  .lb-in{display:grid;justify-items:center;gap:10px;padding:16px}
+  #lbImg{max-width:min(94vw,1400px);max-height:82vh;object-fit:contain;display:block}
+  .lb-cap{font-size:14px;text-align:center}
+  .lb-cap i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:11px;opacity:.7;margin-left:8px}
+  .lb-btn{position:fixed;font:inherit;font-family:"IBM Plex Mono",monospace;font-size:12px;color:#f3efe6;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.25);border-radius:2px;padding:8px 12px;cursor:pointer}
+  .lb-btn:hover,.lb-btn:focus-visible{background:rgba(255,255,255,.18);outline:none}
+  #lbClose{top:16px;right:16px}
+  #lbPrev{left:16px;top:50%;transform:translateY(-50%)}
+  #lbNext{right:16px;top:50%;transform:translateY(-50%)}
+
+  .foot{margin-top:48px;padding:16px 0 28px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted)}
+
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .hero::after{background:color-mix(in srgb,var(--paper) 78%,transparent)}
+    .hero .wrap{padding-top:30px;padding-bottom:30px}
+    .hero h1{font-size:28px}
+    .hero .intro{font-size:15px}
+    #lbPrev,#lbNext{top:auto;bottom:16px;transform:none}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+  <div class="wrap top">
+    <a class="name" href="index.html" id="name"></a>
+    <nav class="pages" aria-label="Pages"><a href="index.html">Map</a><a href="itinerary.html">Itinerary</a><a href="outside.html" aria-current="page">Outside</a></nav>
+  </div>
+
+  <header class="hero">
+    <canvas id="topo" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <div class="kicker">Off the map</div>
+      <h1 id="title">Outside the lab</h1>
+      <p class="intro" id="intro"></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="sec" aria-labelledby="h-int">
+      <div class="sec-h"><h2 id="h-int">Interests</h2></div>
+      <div class="ints" id="ints"></div>
+      <p class="also" id="also"></p>
+    </section>
+
+    <section class="sec" aria-labelledby="h-ph" id="photoSec">
+      <div class="sec-h"><h2 id="h-ph">Photos</h2><div class="seg" id="filters" role="group" aria-label="Filter photos"></div></div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <footer class="foot">
+      <span id="credit"></span>
+      <span>contours regenerate on every visit</span>
+    </footer>
+  </main>
+
+  <dialog id="lb" aria-label="Photo viewer">
+    <div class="lb-in">
+      <img id="lbImg" alt="">
+      <div class="lb-cap" id="lbCap"></div>
+    </div>
+    <button class="lb-btn" id="lbPrev" aria-label="Previous photo">←</button>
+    <button class="lb-btn" id="lbNext" aria-label="Next photo">→</button>
+    <button class="lb-btn" id="lbClose" aria-label="Close">Close ✕</button>
+  </dialog>
+
+<script src="content.js"></script>
+<script src="common.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const { mulberry32, makeNoise, fbm, esc } = U;
+const O = SITE.outside || {};
+
+/* ---------- text ---------- */
+$("#name").textContent = SITE.name;
+document.title = `Outside — ${SITE.name}`;
+if (O.title) $("#title").textContent = O.title;
+$("#intro").textContent = O.intro || "";
+$("#credit").textContent = `Photos © ${SITE.name}`;
+
+$("#ints").innerHTML = (O.interests || []).map(it => `
+  <article class="int${it.past ? " past" : ""}">
+    ${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy" decoding="async">` : ""}
+    <div class="kicker">${esc(it.meta || (it.past ? "Past" : ""))}</div>
+    <h3>${esc(it.name)}</h3>
+    <p>${esc(it.text || "")}</p>
+  </article>`).join("");
+if ((O.also || []).length) $("#also").innerHTML = `<span class="kicker">Also</span>${O.also.map(esc).join(" · ")}`;
+
+/* ---------- photos ---------- */
+const photos = O.photos || [];
+let filter = "all", visible = [], cur = 0;
+const cats = [...new Set(photos.map(p => p.category).filter(Boolean))];
+if (!photos.length) $("#photoSec").hidden = true;
+if (cats.length > 1){
+  $("#filters").innerHTML = ["all", ...cats].map(c => `<button data-c="${esc(c)}">${c === "all" ? "All" : esc(c[0].toUpperCase() + c.slice(1))}</button>`).join("");
+  $("#filters").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ filter = b.dataset.c; renderPhotos(); } });
+} else $("#filters").hidden = true;
+
+function markMissing(img){
+  const b = img.parentElement; b.classList.add("missing"); b.disabled = true;
+  b.innerHTML = `<span>photo not found<br>${esc(img.getAttribute("src"))}</span>`;
+}
+function renderPhotos(){
+  const list = photos.map((p, i) => ({ p, i })).filter(x => filter === "all" || x.p.category === filter);
+  visible = list.map(x => x.i);
+  $("#grid").innerHTML = list.map(({ p, i }) => `
+    <figure>
+      <button class="ph" data-i="${i}" aria-label="Open photo${p.title ? ": " + esc(p.title) : ""}">
+        <img src="${esc(p.src)}" alt="${esc(p.alt || p.title || "")}" loading="lazy" decoding="async">
+      </button>
+      ${p.title || p.place || p.year ? `<figcaption><b>${esc(p.title || "")}</b><i>${esc([p.place, p.year].filter(Boolean).join(" · "))}</i></figcaption>` : ""}
+    </figure>`).join("");
+  $("#grid").querySelectorAll("img").forEach(img => {
+    if (img.complete && !img.naturalWidth) markMissing(img);
+    else img.addEventListener("error", () => markMissing(img), { once: true });
+  });
+  document.querySelectorAll("#filters button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.c === filter)));
+}
+renderPhotos();
+
+/* ---------- lightbox ---------- */
+const lb = $("#lb");
+function show(k){
+  cur = (k + visible.length) % visible.length;
+  const p = photos[visible[cur]];
+  $("#lbImg").src = p.src; $("#lbImg").alt = p.alt || p.title || "";
+  $("#lbCap").innerHTML = `${esc(p.title || "")}<i>${esc([p.place, p.year].filter(Boolean).join(" · "))}</i>`;
+  const multi = visible.length > 1; $("#lbPrev").hidden = !multi; $("#lbNext").hidden = !multi;
+}
+$("#grid").addEventListener("click", e => {
+  const b = e.target.closest(".ph"); if (!b || b.classList.contains("missing")) return;
+  show(visible.indexOf(+b.dataset.i)); lb.showModal();
+});
+$("#lbPrev").addEventListener("click", () => show(cur - 1));
+$("#lbNext").addEventListener("click", () => show(cur + 1));
+$("#lbClose").addEventListener("click", () => lb.close());
+lb.addEventListener("click", e => { if (e.target === lb || e.target.classList.contains("lb-in")) lb.close(); });
+lb.addEventListener("keydown", e => { if (e.key === "ArrowLeft") show(cur - 1); if (e.key === "ArrowRight") show(cur + 1); });
+
+/* ---------- generated contour band (same engine as the map) ---------- */
+const seed = Math.floor(Math.random() * 1e6);
+function drawTopo(){
+  const c = $("#topo"), W = c.clientWidth, H = c.clientHeight; if (!W || !H) return;
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+  const ctx = c.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const rand = mulberry32(seed), noise = makeNoise(rand);
+  const cell = 4, nx = Math.ceil(W / cell) + 2, ny = Math.ceil(H / cell) + 2, h = new Float32Array(nx * ny);
+  const S = 420, ox = rand() * 100, oy = rand() * 100;
+  const peaks = Array.from({ length: 3 }, () => ({ x: W * (.5 + .45 * rand()), y: H * (.15 + .7 * rand()), s: 70 + rand() * 90, a: .45 + rand() * .5 }));
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++){
+    const x = i * cell, y = j * cell;
+    let z = .6 * fbm(noise, x / S + ox, y / S + oy, 4);
+    for (const p of peaks) z += p.a * Math.exp(-((x - p.x) ** 2 + (y - p.y) ** 2) / (2 * p.s * p.s));
+    h[j * nx + i] = z;
+  }
+  let lo = Infinity, hi = -Infinity; for (const v of h){ if (v < lo) lo = v; if (v > hi) hi = v; }
+  for (let k = 0; k < h.length; k++) h[k] = (h[k] - lo) / (hi - lo);
+  const F = { h, nx, ny, cell }, cMinor = U.css("--contour"), cIndex = U.css("--contour-index");
+  ctx.clearRect(0, 0, W, H); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  for (let n = 1; n * .03 < 1; n++){
+    const idx = n % 5 === 0;
+    ctx.beginPath(); U.traceLevel(ctx, F, n * .03);
+    ctx.strokeStyle = idx ? cIndex : cMinor; ctx.globalAlpha = idx ? .85 : .5; ctx.lineWidth = idx ? 1.1 : .6; ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(drawTopo, 120); }).observe($("#topo"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawTopo);
+</script>
+</body>
+</html>
