@@ -3,12 +3,23 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Itinerary — Pierre Emery</title>
+<title>Itinerary - Pierre Emery's Portfolio</title>
+<meta name="description" content="Pierre Emery, professional master's student at Mila, passionate about sports analytics and machine learning for climate change." />
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="favicon.ico" sizes="48x48" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="theme-color" content="#16181b" />
 
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content="Pierre Emery" />
 <meta property="og:url" content="https://pierre-emery.github.io/itinerary.html" />
-<meta property="og:title" content="Itinerary — Pierre Emery" />
-<meta property="og:image" content="https://pierre-emery.github.io/assets/miniature.jpeg" />
+<meta property="og:title" content="Itinerary - Pierre Emery's Portfolio" />
+<meta property="og:description" content="Pierre Emery, professional master's student at Mila, passionate about sports analytics and machine learning for climate change." />
+<meta property="og:image" content="https://pierre-emery.github.io/assets/miniature.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://pierre-emery.github.io/assets/miniature.png" />
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 <script>try{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }catch(e){}</script>
@@ -559,7 +570,7 @@ U.onTheme(() => { buildWorld(); buildPins(); setActive(activeId); });
 new ResizeObserver(resize).observe(stage);
 
 U.bar($("#bar"), "itinerary");
-document.title = `Itinerary — ${SITE.name}`;
+document.title = `Itinerary - ${SITE.name}`;
 
 buildWorld(); renderSidebar(); buildPins();
 resize(); overview(1);
